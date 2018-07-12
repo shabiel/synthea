@@ -107,7 +107,7 @@ public class UtilitiesTest {
   public void testCompareDifferentTypesThrowsException() {
     Object lhs = Boolean.FALSE;
     Object rhs = "Z";
-    Utilities.compare(lhs, rhs, "==");
+    Utilities.compare(lhs, rhs, ">");
   }
 
   @Test(expected = RuntimeException.class)

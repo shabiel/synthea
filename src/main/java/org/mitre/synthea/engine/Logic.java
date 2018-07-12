@@ -34,14 +34,87 @@ public abstract class Logic {
   public abstract boolean test(Person person, long time);
 
   /**
+   * Base class for logic that implements a comparison between 
+   * a value derived from the current patient and/or time
+   * and a provided value using some operator.
+   * Exposes 3 functions:
+   *  - operator():
+   *       returns the provided operator from the `operator` field,
+   *       or alternatively may be overriden 
+   *  - getValue(person, time): 
+   *      returns the relevant value from the person / time to use for comparison
+   *  - getComparison():
+   *      returns the provided value for comparison
+   *  
+   * @param <T> Type of values that are compared
+   */
+  public abstract static class Comparison<T> extends Logic {
+    protected String operator;
+    
+    /**
+     * Get the value for comparison defined in the JSON.
+     * This is the fixed value which will be compared against some value from the patient.
+     * @return Fixed value for comparison
+     */
+    public abstract T getComparison();
+    
+    /**
+     * Get the operator defined in the JSON. Implemented as a method so that it may be overridden.
+     * 
+     * @return The value of the `operator` field in the JSON.
+     */
+    public String operator() {
+      return operator;
+    }
+    
+    /**
+     * Get the value for comparison from the person/time.
+     * This is the derived value which will be compared against some fixed value from the JSON.
+     * 
+     * @param person Person to evaluate
+     * @param time Timestamp
+     * @return Derived value for comparison
+     */
+    public abstract T getValue(Person person, long time);
+    
+    
+    /**
+     * Test whether the comparison is true for the given person at the given time.
+     * 
+     * @param person Person to execute logic against
+     * @param time Timestamp to execute logic against
+     * @return boolean - whether or not the given condition is true or not
+     */
+    @Override
+    public boolean test(Person person, long time) {
+      return Utilities.compare(getValue(person, time), getComparison(), operator());
+    }
+  }
+  
+  /**
+   * Additional layer of the Comparison class, where the "==" operator is implied.
+   */
+  private abstract static class EqualityComparison<T> extends Comparison<T> {
+    @Override
+    public final String operator() {
+      return "==";
+    }
+  }
+  
+  /**
    * The Gender condition type tests the patient's gender. (M or F)
    */
-  public static class Gender extends Logic {
+  public static class Gender extends EqualityComparison<String> {
     private String gender;
 
     @Override
-    public boolean test(Person person, long time) {
-      return gender.equals(person.attributes.get(Person.GENDER));
+    public String getComparison() {
+      return gender;
+    }
+
+    @Override
+    public String getValue(Person person, long time) {
+      return (String) person.attributes.get(Person.GENDER);
     }
   }
   
@@ -49,13 +122,17 @@ public abstract class Logic {
    * The Age condition type tests the patient's age, in a given unit. 
    * (Ex, years for adults or months for young children)
    */
-  public static class Age extends Logic {
+  public static class Age extends Comparison<Double> {
     private Double quantity;
     private String unit;
-    private String operator;
+    
+    @Override
+    public Double getComparison() {
+      return quantity;
+    }
 
     @Override
-    public boolean test(Person person, long time) {
+    public Double getValue(Person person, long time) {
       double age;
 
       switch (unit) {
@@ -70,8 +147,8 @@ public abstract class Logic {
           throw new UnsupportedOperationException("Units '" + unit
             + "' not currently supported in Age logic.");
       }
-
-      return Utilities.compare(age, quantity, operator);
+      
+      return age;
     }
   }
   
@@ -81,31 +158,47 @@ public abstract class Logic {
    * medications or procedures of different time periods, or model different frequency
    * of conditions.
    */
-  public static class Date extends Logic {
+  public static class Date extends Comparison<Number> {
     private Integer year;
     private Integer month;
     private String date; //must be in format yyyy-MM-dd HH:mm:ss.SSS 
-    private String operator;
 
+    
     @Override
-    public boolean test(Person person, long time) {
+    public Number getComparison() {
       if (year != null) {
-        int currentyear = Utilities.getYear(time);
-        return Utilities.compare(currentyear, year, operator);
+        return year;
+        
       } else if (month != null) {
-        int currentmonth = Utilities.getMonth(time);
-        return Utilities.compare(currentmonth, month, operator);
+        return month;
+        
       } else if (date != null) {
-        DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        java.util.Date testdate;
         try {
-          testdate = sdf.parse(date);
+          DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+          java.util.Date testdate = sdf.parse(date);
+          return testdate.getTime();
         } catch (ParseException e) {
           throw new IllegalArgumentException("Invalid date format provided to Date logic,"
               + " required: yyyy-MM-dd HH:mm:ss.SSS, given: " + date, e);
         }
-        long testtime = testdate.getTime();
-        return Utilities.compare(time, testtime, operator);
+
+      } else {
+        throw new UnsupportedOperationException("Date type "
+            + "not currently supported in Date logic.");
+      }
+    }
+
+    @Override
+    public Number getValue(Person person, long time) {
+      if (year != null) {
+        return Utilities.getYear(time);
+        
+      } else if (month != null) {
+        return  Utilities.getMonth(time);
+        
+      } else if (date != null) {
+        return time;
+        
       } else {
         throw new UnsupportedOperationException("Date type "
             + "not currently supported in Date logic.");
@@ -118,12 +211,17 @@ public abstract class Logic {
    * status is based on income, education, and occupation, and is categorized in Synthea as "High",
    * "Middle", or "Low".
    */
-  public static class SocioeconomicStatus extends Logic {
+  public static class SocioeconomicStatus extends EqualityComparison<String> {
     private String category;
 
     @Override
-    public boolean test(Person person, long time) {
-      return category.equals(person.attributes.get(Person.SOCIOECONOMIC_CATEGORY));
+    public String getComparison() {
+      return category;
+    }
+
+    @Override
+    public String getValue(Person person, long time) {
+      return (String) person.attributes.get(Person.SOCIOECONOMIC_CATEGORY);
     }
   }
   
@@ -131,12 +229,24 @@ public abstract class Logic {
    * The Race condition type tests a patient's race. Synthea supports the following races:
    * "White", "Native" (Native American), "Hispanic", "Black", "Asian", and "Other".
    */
-  public static class Race extends Logic {
+  public static class Race extends EqualityComparison<String> {
     private String race;
 
     @Override
-    public boolean test(Person person, long time) {
-      return race.equalsIgnoreCase((String) person.attributes.get(Person.RACE));
+    public String getComparison() {
+      // IMPORTANT: this comparison must be case-insensitive
+      return race.toUpperCase();
+    }
+
+    @Override
+    public String getValue(Person person, long time) {
+      String personRace = (String) person.attributes.get(Person.RACE);
+      // IMPORTANT: this comparison must be case-insensitive
+      if (personRace != null) {
+        personRace = personRace.toUpperCase();
+      }
+      
+      return personRace;
     }
   }
 
@@ -145,14 +255,18 @@ public abstract class Logic {
    * to drive a patient's encounters, on a scale of 1-100. A symptom may be tracked for multiple
    * conditions, in these cases only the highest value is considered. See also the Symptom State.
    */
-  public static class Symptom extends Logic {
+  public static class Symptom extends Comparison<Double> {
     private String symptom;
-    private String operator;
     private double value;
 
     @Override
-    public boolean test(Person person, long time) {
-      return Utilities.compare((double) person.getSymptom(symptom), value, operator);
+    public Double getComparison() {
+      return value;
+    }
+
+    @Override
+    public Double getValue(Person person, long time) {
+      return (double) person.getSymptom(symptom);
     }
   }
 
@@ -166,14 +280,18 @@ public abstract class Logic {
    *   unless the operator is is nil or is not nil. Otherwise, the GMF will raise an exception
    *   that the observation value cannot be compared as there has been no observation made.
    */
-  public static class Observation extends Logic {
-    private String operator;
+  public static class Observation extends Comparison<Object> {
     private List<Code> codes;
     private String referencedByAttribute;
-    private Double value;
+    private Object value;
 
     @Override
-    public boolean test(Person person, long time) {
+    public Object getComparison() {
+      return value;
+    }
+
+    @Override
+    public Object getValue(Person person, long time) {
       HealthRecord.Observation observation = null;
       if (this.codes != null) {
         for (Code code : this.codes) {
@@ -184,34 +302,34 @@ public abstract class Logic {
           }
         }
       } else if (this.referencedByAttribute != null) {
-        if (person.attributes.containsKey(this.referencedByAttribute)) {
-          observation = 
+        observation = 
               (HealthRecord.Observation) person.attributes.get(this.referencedByAttribute);
-        } else {
-          return false;
-        }
       }
-
-      return Utilities.compare(observation.value, this.value, operator);
+      
+      if ("is nil".equals(operator) || "is not nil".equals(operator)) {
+        // HACK: use the observation itself for these comparisons
+        return observation;
+      }
+      
+      return observation.value;
     }
   }
   
   /**
    * The Attribute condition type tests a named attribute on the patient entity.
    */
-  public static class Attribute extends Logic {
-    private String attribute;
-    private String operator;
-    
+  public static class Attribute extends Comparison<Object> {
+    private String attribute;    
     private Object value;
 
     @Override
-    public boolean test(Person person, long time) {
-      if (value instanceof String) {
-        return value.equals(person.attributes.get(attribute));
-      } else {
-        return Utilities.compare(person.attributes.get(attribute), value, operator);
-      }
+    public Object getComparison() {
+      return value;
+    }
+
+    @Override
+    public Object getValue(Person person, long time) {
+      return person.attributes.get(attribute);
     }
   }
 
@@ -446,14 +564,18 @@ public abstract class Logic {
    * in order to drive a patient's physical condition, and are recorded in observations. See also
    * the Symptom State.
    */
-  public static class VitalSign extends Logic {
+  public static class VitalSign extends Comparison<Double> {
     private org.mitre.synthea.world.concepts.VitalSign vitalSign;
-    private String operator;
     private double value;
 
     @Override
-    public boolean test(Person person, long time) {
-      return Utilities.compare(person.getVitalSign(vitalSign), value, operator);
+    public Double getComparison() {
+      return value;
+    }
+
+    @Override
+    public Double getValue(Person person, long time) {
+      return person.getVitalSign(vitalSign);
     }
   }
 }

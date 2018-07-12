@@ -101,18 +101,29 @@ public class Utilities {
       return lhs == null;
     } else if (operator.equals("is not nil")) {
       return lhs != null;
-    } else if (lhs == null) {
-      return false;
-    }
+    } 
+    
     if (lhs instanceof Number && rhs instanceof Number) {
       return compare(((Number) lhs).doubleValue(), ((Number) rhs).doubleValue(), operator);
     } else if (lhs instanceof Boolean && rhs instanceof Boolean) {
       return compare((Boolean) lhs, (Boolean) rhs, operator);
     } else if (lhs instanceof String && rhs instanceof String) {
       return compare((String) lhs, (String) rhs, operator);
+    } else if (operator.equals("==")) {
+      return lhs == null ? rhs == null : lhs.equals(rhs);
+    } else if (operator.equals("!=")) {
+      return lhs == null ? rhs != null : !lhs.equals(rhs);
     } else {
-      throw new RuntimeException(String.format("Cannot compare %s to %s.\n",
-          lhs.getClass().getName(), rhs.getClass().getName()));
+      String l = lhs == null ? "null" : lhs.getClass().getName();
+      String r = rhs == null ? "null" : rhs.getClass().getName();
+      
+      String msg = String.format("Cannot compare %s %s %s.", l, operator, r);
+      
+      if (lhs == null || rhs == null) {
+        throw new NullPointerException(msg);
+      } else {
+        throw new RuntimeException(msg);
+      }
     }
   }
 
@@ -171,7 +182,7 @@ public class Utilities {
       case "<=":
         return lhs.compareTo(rhs) <= 0;
       case "==":
-        return lhs == rhs;
+        return lhs == null ? rhs == null : lhs.equals(rhs);
       case ">=":
         return lhs.compareTo(rhs) >= 0;
       case ">":
