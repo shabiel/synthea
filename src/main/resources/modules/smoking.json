@@ -334,31 +334,7 @@
       "type": "SetAttribute",
       "attribute": "smoker",
       "value": false,
-      "conditional_transition": [
-        {
-          "transition": "Add_Time",
-          "condition": {
-            "condition_type": "Or",
-            "conditions": [
-              {
-                "condition_type": "Attribute",
-                "attribute": "quit_smoking_care",
-                "operator": "==",
-                "value": "medication"
-              },
-              {
-                "condition_type": "Attribute",
-                "attribute": "quit_smoking_care",
-                "operator": "==",
-                "value": "both"
-              }
-            ]
-          }
-        },
-        {
-          "transition": "Adherence_Delay"
-        }
-      ]
+      "direct_transition": "Adherence_Delay"
     },
     "Smoker_Attribute_Default": {
       "type": "SetAttribute",
@@ -467,11 +443,11 @@
       ],
       "distributed_transition": [
         {
-          "transition": "Medication",
+          "transition": "Smoking_Cessation_Therapy_Medication",
           "distribution": 0.29
         },
         {
-          "transition": "Counseling",
+          "transition": "Smoking_Cessation_Therapy_Counseling",
           "distribution": 0.068
         },
         {
@@ -479,236 +455,71 @@
           "distribution": 0.595
         },
         {
-          "transition": "Counseling_and_Medication",
+          "transition": "Smoking_Cessation_Therapy_All",
           "distribution": 0.047
         }
       ]
-    },
-    "Telephone_Quitline": {
-      "type": "Simple",
-      "direct_transition": "Possible_Is_Both_State"
-    },
-    "One_On_One_Counseling": {
-      "type": "Simple",
-      "direct_transition": "Possible_Is_Both_State"
-    },
-    "Clinic/Class/Support_Group": {
-      "type": "Simple",
-      "direct_transition": "Possible_Is_Both_State"
-    },
-    "Nicotine_Patch": {
-      "type": "MedicationOrder",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 198029,
-          "display": "24 HR Nicotine 0.583 MG/HR Transdermal System"
-        }
-      ],
-      "direct_transition": "6-14_Week_Delay"
-    },
-    "Nicotine_Gum/Lozenges": {
-      "type": "MedicationOrder",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 154906,
-          "display": "Nicotine Chewing Gum"
-        }
-      ],
-      "direct_transition": "6-14_Week_Delay"
-    },
-    "Varenicline": {
-      "type": "MedicationOrder",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 591622,
-          "display": "Varenicline"
-        }
-      ],
-      "direct_transition": "Up_To_14_Week_Delay"
-    },
-    "Bupropion": {
-      "type": "MedicationOrder",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 42347,
-          "display": "Bupropion"
-        }
-      ],
-      "direct_transition": "Up_To_14_Week_Delay"
-    },
-    "Nicotine_Spray/Inhaler": {
-      "type": "MedicationOrder",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 1801233,
-          "display": "Nicotine Nasal Product"
-        }
-      ],
-      "direct_transition": "Up_To_6_Month_Delay"
-    },
-    "Other_Counseling": {
-      "type": "Simple",
-      "direct_transition": "Possible_Is_Both_State"
-    },
-    "Other_Medication": {
-      "type": "Simple",
-      "direct_transition": "Possible_Adherence",
-      "remarks": [
-        "To-do: figure out what to do here."
-      ]
-    },
-    "Counseling_and_Medication": {
-      "type": "SetAttribute",
-      "attribute": "quit_smoking_care",
-      "direct_transition": "Counseling_Distribution",
-      "value": "both"
-    },
-    "Medication_Distribution": {
-      "type": "Simple",
-      "distributed_transition": [
-        {
-          "transition": "Nicotine_Patch",
-          "distribution": 0.166
-        },
-        {
-          "transition": "Nicotine_Gum/Lozenges",
-          "distribution": 0.125
-        },
-        {
-          "transition": "Varenicline",
-          "distribution": 0.079
-        },
-        {
-          "transition": "Bupropion",
-          "distribution": 0.027
-        },
-        {
-          "transition": "Nicotine_Spray/Inhaler",
-          "distribution": 0.024
-        },
-        {
-          "transition": "Other_Medication",
-          "distribution": 0.579
-        }
-      ],
-      "remarks": [
-        "For duration of each medication:",
-        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29581/?report=objectonly"
-      ]
-    },
-    "Counseling_Distribution": {
-      "type": "Simple",
-      "distributed_transition": [
-        {
-          "transition": "Telephone_Quitline",
-          "distribution": 0.041
-        },
-        {
-          "transition": "One_On_One_Counseling",
-          "distribution": 0.028
-        },
-        {
-          "transition": "Clinic/Class/Support_Group",
-          "distribution": 0.024
-        },
-        {
-          "transition": "Other_Counseling",
-          "distribution": 0.907
-        }
-      ],
-      "remarks": [
-        "To-do: determine what state type to use for these."
-      ]
-    },
-    "Counseling": {
-      "type": "SetAttribute",
-      "attribute": "quit_smoking_care",
-      "direct_transition": "Counseling_Distribution",
-      "value": "counseling"
-    },
-    "Medication": {
-      "type": "SetAttribute",
-      "attribute": "quit_smoking_care",
-      "direct_transition": "Medication_Distribution",
-      "value": "medication"
     },
     "Possible_Adherence": {
       "type": "Simple",
       "complex_transition": [
         {
           "condition": {
-            "condition_type": "Attribute",
-            "attribute": "quit_smoking_care",
-            "operator": "==",
-            "value": "nil"
+            "condition_type": "PriorState",
+            "name": "Smoking_Cessation_Therapy_Medication"
           },
           "distributions": [
             {
-              "transition": "Smoker_Attribute",
-              "distribution": 0.892
+              "distribution": 0.783,
+              "transition": "Smoker_Attribute"
             },
             {
-              "transition": "Quit_Smoking_Attribute",
-              "distribution": 0.108
+              "distribution": 0.217,
+              "transition": "Quit_Smoking_Attribute"
             }
           ]
         },
         {
           "condition": {
-            "condition_type": "Attribute",
-            "attribute": "quit_smoking_care",
-            "operator": "==",
-            "value": "medication"
+            "condition_type": "PriorState",
+            "name": "Smoking_Cessation_Therapy_Counseling"
           },
           "distributions": [
             {
-              "transition": "Smoker_Attribute",
-              "distribution": 0.783
+              "distribution": 0.854,
+              "transition": "Smoker_Attribute"
             },
             {
-              "transition": "Quit_Smoking_Attribute",
-              "distribution": 0.217
+              "distribution": 0.146,
+              "transition": "Quit_Smoking_Attribute"
             }
           ]
         },
         {
           "condition": {
-            "condition_type": "Attribute",
-            "attribute": "quit_smoking_care",
-            "operator": "==",
-            "value": "counseling"
+            "condition_type": "PriorState",
+            "name": "Smoking_Cessation_Therapy_All"
           },
           "distributions": [
             {
-              "transition": "Smoker_Attribute",
-              "distribution": 0.854
+              "distribution": 0.758,
+              "transition": "Smoker_Attribute"
             },
             {
-              "transition": "Quit_Smoking_Attribute",
-              "distribution": 0.146
+              "distribution": 0.242,
+              "transition": "Quit_Smoking_Attribute"
             }
           ]
         },
         {
-          "condition": {
-            "condition_type": "Attribute",
-            "attribute": "quit_smoking_care",
-            "operator": "==",
-            "value": "both"
-          },
           "distributions": [
             {
-              "transition": "Smoker_Attribute",
-              "distribution": 0.758
+              "distribution": 0.892,
+              "transition": "Smoker_Attribute"
             },
             {
-              "transition": "Quit_Smoking_Attribute",
-              "distribution": 0.242
+              "distribution": 0.108,
+              "transition": "Quit_Smoking_Attribute"
             }
           ]
         }
@@ -719,206 +530,9 @@
         "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29578/?report=objectonly"
       ]
     },
-    "6-14_Week_Delay": {
-      "type": "Delay",
-      "range": {
-        "low": 6,
-        "high": 14,
-        "unit": "weeks"
-      },
-      "conditional_transition": [
-        {
-          "transition": "End_Nicotine_Gum/Lozenges",
-          "condition": {
-            "condition_type": "Active Medication",
-            "codes": [
-              {
-                "system": "RxNorm",
-                "code": 154906,
-                "display": "Nicotine Chewing Gum"
-              }
-            ]
-          }
-        },
-        {
-          "transition": "End_Nicotine_Patch",
-          "condition": {
-            "condition_type": "Active Medication",
-            "codes": [
-              {
-                "system": "RxNorm",
-                "code": 198029,
-                "display": "24 HR Nicotine 0.583 MG/HR Transdermal System"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "Up_To_6_Month_Delay": {
-      "type": "Delay",
-      "range": {
-        "low": 0,
-        "high": 6,
-        "unit": "months"
-      },
-      "direct_transition": "End_Nicotine_Spray/Inhaler"
-    },
-    "Up_To_14_Week_Delay": {
-      "type": "Delay",
-      "range": {
-        "low": 0,
-        "high": 14,
-        "unit": "weeks"
-      },
-      "conditional_transition": [
-        {
-          "transition": "End_Varenicline",
-          "condition": {
-            "condition_type": "Active Medication",
-            "codes": [
-              {
-                "system": "RxNorm",
-                "code": 591622,
-                "display": "Varenicline"
-              }
-            ]
-          }
-        },
-        {
-          "transition": "End_Bupropion",
-          "condition": {
-            "condition_type": "Active Medication",
-            "codes": [
-              {
-                "system": "RxNorm",
-                "code": 42347,
-                "display": "Bupropion"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "Possible_Is_Both_State": {
-      "type": "Simple",
-      "conditional_transition": [
-        {
-          "transition": "Medication_Distribution",
-          "condition": {
-            "condition_type": "Attribute",
-            "attribute": "quit_smoking_care",
-            "operator": "==",
-            "value": "both"
-          }
-        },
-        {
-          "transition": "Possible_Adherence"
-        }
-      ]
-    },
-    "End_Nicotine_Patch": {
-      "type": "MedicationEnd",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 198029,
-          "display": "24 HR Nicotine 0.583 MG/HR Transdermal System"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
-    "End_Nicotine_Gum/Lozenges": {
-      "type": "MedicationEnd",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 154906,
-          "display": "Nicotine Chewing Gum"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
-    "End_Nicotine_Spray/Inhaler": {
-      "type": "MedicationEnd",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 1801233,
-          "display": "Nicotine Nasal Product"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
-    "End_Bupropion": {
-      "type": "MedicationEnd",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 42347,
-          "display": "Bupropion"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
-    "End_Varenicline": {
-      "type": "MedicationEnd",
-      "codes": [
-        {
-          "system": "RxNorm",
-          "code": 591622,
-          "display": "Varenicline"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
     "Quit_Smoking_Attempt": {
       "type": "Simple",
       "direct_transition": "Time_Since_Quitting_Set"
-    },
-    "Add_Up_To_6_Months_Since_Quit": {
-      "type": "Simple",
-      "direct_transition": "Adherence_Delay"
-    },
-    "Add_6-14_Weeks_Since_Quit": {
-      "type": "Simple",
-      "direct_transition": "Adherence_Delay"
-    },
-    "Add_Up_To_14_Weeks_Since_Quit": {
-      "type": "Simple",
-      "direct_transition": "Adherence_Delay"
-    },
-    "Add_Time": {
-      "type": "Simple",
-      "conditional_transition": [
-        {
-          "transition": "Add_6-14_Weeks_Since_Quit",
-          "condition": {
-            "condition_type": "PriorState",
-            "name": "6-14_Week_Delay",
-            "since": "Quit_Smoking_Care"
-          }
-        },
-        {
-          "transition": "Add_Up_To_14_Weeks_Since_Quit",
-          "condition": {
-            "condition_type": "PriorState",
-            "name": "Up_To_14_Week_Delay",
-            "since": "Quit_Smoking_Care"
-          }
-        },
-        {
-          "transition": "Add_Up_To_6_Months_Since_Quit",
-          "condition": {
-            "condition_type": "PriorState",
-            "name": "Up_To_6_Month_Delay",
-            "since": "Quit_Smoking_Care"
-          }
-        }
-      ],
-      "remarks": [
-        "The three states that follow this will have to be able to use the value chosen by the delay range previous."
-      ]
     },
     "Adherence_Probability_Based_On_Time": {
       "type": "SetAttribute",
@@ -962,6 +576,65 @@
           }
         }
       ]
+    },
+    "Smoking_Cessation_Therapy_All": {
+      "type": "CarePlanStart",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "activities": [
+        {
+          "system": "SNOMED-CT",
+          "code": 384742004,
+          "display": "Smoking cessation assistance"
+        },
+        {
+          "system": "SNOMED-CT",
+          "code": 713700008,
+          "display": "Smoking cessation drug therapy"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "Smoking_Cessation_Therapy_Counseling": {
+      "type": "CarePlanStart",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "activities": [
+        {
+          "system": "SNOMED-CT",
+          "code": 384742004,
+          "display": "Smoking cessation assistance"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "Smoking_Cessation_Therapy_Medication": {
+      "type": "CarePlanStart",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "activities": [
+        {
+          "system": "SNOMED-CT",
+          "code": 713700008,
+          "display": "Smoking cessation drug therapy"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
     }
   }
 }
