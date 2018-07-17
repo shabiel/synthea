@@ -1,7 +1,7 @@
 {
   "name": "Smoking",
   "remarks": [
-    "https://www.cdc.gov/tobacco/data_statistics/mmwrs/byyear/2018/mm6702a1/highlights.htm\n\nhttps://www.cdc.gov/tobacco/data_statistics/fact_sheets/adult_data/cig_smoking/index.htm\n\n***more stats here"
+    "The addition of a table-based transitions and expressions in the GMF will allow this module to be much more accurate and thorough:\n\nhttps://github.com/synthetichealth/synthea/issues/302\nhttps://github.com/synthetichealth/synthea/pull/386\n\nOnce expressions are implemented into the GMF, probabilities will be able to be modifiable based on time (states ending in \"!\" need this capability).\n\nOnce a table-based transition is implemented into the GMF, more stats can be added to cover more risk factors.\n\n***more stats here\n\nhttps://www.cdc.gov/tobacco/data_statistics/mmwrs/byyear/2018/mm6702a1/highlights.htm\n\nhttps://www.cdc.gov/tobacco/data_statistics/fact_sheets/adult_data/cig_smoking/index.htm"
   ],
   "states": {
     "Initial": {
@@ -150,8 +150,7 @@
         "1995 - 24.7%",
         "2005 - 20.9%",
         "2015 - 16.1%",
-        "assume that it was never significantly higher than 42% pre-1960s, but will continue to drop",
-        "slowly after 2016",
+        "assume that it was never significantly higher than 42% pre 1960s, but will continue to drop slowly after 2016",
         "it's decreasing about .5% per year"
       ]
     },
@@ -334,7 +333,7 @@
       "type": "SetAttribute",
       "attribute": "smoker",
       "value": false,
-      "direct_transition": "Adherence_Delay"
+      "direct_transition": "Time_Since_Quitting_Increment_2"
     },
     "Smoker_Attribute_Default": {
       "type": "SetAttribute",
@@ -346,32 +345,25 @@
       "type": "SetAttribute",
       "attribute": "quit_smoking_probability",
       "value": 0.598,
-      "direct_transition": "Decrease_Quit_Probability"
+      "direct_transition": "Decrease_Quit_Probability!"
     },
     "Quit_Probability_45-64": {
       "type": "SetAttribute",
       "attribute": "quit_smoking_probability",
       "value": 0.496,
-      "direct_transition": "Decrease_Quit_Probability"
+      "direct_transition": "Decrease_Quit_Probability!"
     },
     "Quit_Probability_Over_65": {
       "type": "SetAttribute",
       "attribute": "quit_smoking_probability",
       "value": 0.472,
-      "direct_transition": "Decrease_Quit_Probability"
+      "direct_transition": "Decrease_Quit_Probability!"
     },
     "Quit_Probability_16-24": {
       "type": "SetAttribute",
       "attribute": "quit_smoking_probability",
       "value": 0.667,
-      "direct_transition": "Decrease_Quit_Probability"
-    },
-    "Decrease_Quit_Probability": {
-      "type": "Simple",
-      "direct_transition": "Possible_Quitter",
-      "remarks": [
-        "This state will decrease the probability that a smoker quits based on the amount of time they have been smoking. Will have to use an expression."
-      ]
+      "direct_transition": "Decrease_Quit_Probability!"
     },
     "Time_Since_Quitting_Set": {
       "type": "SetAttribute",
@@ -390,9 +382,9 @@
           "transition": "Terminal",
           "condition": {
             "condition_type": "Attribute",
-            "attribute": "time_since_quitting_in_weeks",
+            "attribute": "time_since_quitting_in_months",
             "operator": ">",
-            "value": 521
+            "value": 60
           }
         },
         {
@@ -415,9 +407,9 @@
                   },
                   {
                     "condition_type": "Attribute",
-                    "attribute": "time_since_quitting_in_weeks",
+                    "attribute": "time_since_quitting_in_months",
                     "operator": "<=",
-                    "value": 521
+                    "value": 60
                   }
                 ]
               }
@@ -427,19 +419,25 @@
         {
           "transition": "Quit_Smoking_Care"
         }
+      ],
+      "remarks": [
+        "For now, it is set that if a smoker has not smoked in over 5 years, they transition to the Terminal.",
+        "If they have not smoked in under 5 years, has already gone through a Smoking Cessation Care Plan, and is not currently a smoker, the probability that they remain not smoking will be based on how long it has been since they've quit (again, will need to be able to use expressions).",
+        "Otherwise, they transition to Quit_Smoking_Care where they will possibly undergo a Care Plan."
       ]
     },
     "Time_Since_Quitting_Increment": {
       "type": "Counter",
       "attribute": "time_since_quitting_in_months",
       "action": "increment",
-      "direct_transition": "Adherence_Probability_Based_On_Time"
+      "direct_transition": "Adherence_Probability_Based_On_Time!"
     },
     "Quit_Smoking_Care": {
       "type": "Simple",
       "remarks": [
         "Among smokers who made quit attempts, 6.8% reported using counseling, 29.0% medication, and 4.7% both. Among smokers who used counseling, 4.1% used a telephone quitline, 2.8% used one-on-one counseling, and 2.4% used a stop smoking clinic, class, or support group. Among smokers who used medications, 16.6% used a nicotine patch, 12.5% used nicotine gum or lozenges, 7.9% used varenicline, 2.7% used bupropion, and 2.4% used nicotine spray or inhaler.",
-        "https://www.cdc.gov/mmwr/volumes/65/wr/mm6552a1.htm?s_cid=mm6552a1_w%20"
+        "https://www.cdc.gov/mmwr/volumes/65/wr/mm6552a1.htm?s_cid=mm6552a1_w%20",
+        "To-do: add these medications/therapy as states? Or leave as simply part of the Care Plan?"
       ],
       "distributed_transition": [
         {
@@ -459,6 +457,137 @@
           "distribution": 0.047
         }
       ]
+    },
+    "Quit_Smoking_Attempt": {
+      "type": "Simple",
+      "direct_transition": "Time_Since_Quitting_Set"
+    },
+    "Possible_Quitter": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "transition": "Quit_Smoking_Attempt",
+          "distribution": {
+            "attribute": "quit_smoking_probability",
+            "default": 0.5
+          }
+        },
+        {
+          "transition": "Time_Smoking",
+          "distribution": {
+            "attribute": "not_quit_smoking_probability",
+            "default": 0.5
+          }
+        }
+      ]
+    },
+    "Smoking_Cessation_Therapy_All": {
+      "type": "CarePlanStart",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "activities": [
+        {
+          "system": "SNOMED-CT",
+          "code": 384742004,
+          "display": "Smoking cessation assistance"
+        },
+        {
+          "system": "SNOMED-CT",
+          "code": 713700008,
+          "display": "Smoking cessation drug therapy"
+        }
+      ],
+      "direct_transition": "Smoking_Cessation_Therapy_End"
+    },
+    "Smoking_Cessation_Therapy_Counseling": {
+      "type": "CarePlanStart",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "activities": [
+        {
+          "system": "SNOMED-CT",
+          "code": 384742004,
+          "display": "Smoking cessation assistance"
+        }
+      ],
+      "direct_transition": "Smoking_Cessation_Therapy_End"
+    },
+    "Smoking_Cessation_Therapy_Medication": {
+      "type": "CarePlanStart",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "activities": [
+        {
+          "system": "SNOMED-CT",
+          "code": 713700008,
+          "display": "Smoking cessation drug therapy"
+        }
+      ],
+      "direct_transition": "Smoking_Cessation_Therapy_End"
+    },
+    "Decrease_Quit_Probability!": {
+      "type": "Simple",
+      "direct_transition": "Possible_Quitter",
+      "remarks": [
+        "This state will decrease the probability that a smoker quits based on the amount of time they have been smoking. Will have to be done using an expression, which is not yet supported in the GMF.",
+        "These probabilities should get fairly low fairly quickly (they are much too high currently)."
+      ]
+    },
+    "Adherence_Probability_Based_On_Time!": {
+      "type": "SetAttribute",
+      "attribute": "adherence_probability",
+      "distributed_transition": [
+        {
+          "transition": "Adherence_Delay",
+          "distribution": {
+            "attribute": "adherence_probability",
+            "default": 0.9
+          }
+        },
+        {
+          "transition": "Smoker_Attribute",
+          "distribution": {
+            "attribute": "non_adherence_probability",
+            "default": 0.1
+          }
+        }
+      ],
+      "remarks": [
+        "Would have to use an expression to determine a probability based on time since quitting. Gets processed if the patient has gone through the Quit_Smoking_Care state and is not currently a smoker."
+      ],
+      "value": 0.9
+    },
+    "Time_Since_Quitting_Increment_2": {
+      "type": "Counter",
+      "attribute": "time_since_quitting_in_months",
+      "action": "increment",
+      "direct_transition": "Adherence_Delay"
+    },
+    "Smoking_Cessation_Therapy_End": {
+      "type": "CarePlanEnd",
+      "codes": [
+        {
+          "system": "SNOMED-CT",
+          "code": 710081004,
+          "display": "Smoking cessation therapy"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
     },
     "Possible_Adherence": {
       "type": "Simple",
@@ -525,116 +654,11 @@
         }
       ],
       "remarks": [
-        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29548/?report=objectonly",
+        "Statistics on how smoking cessation therapy affects adherence",
         "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29580/?report=objectonly",
-        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29578/?report=objectonly"
+        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29578/?report=objectonly",
+        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29548/?report=objectonly"
       ]
-    },
-    "Quit_Smoking_Attempt": {
-      "type": "Simple",
-      "direct_transition": "Time_Since_Quitting_Set"
-    },
-    "Adherence_Probability_Based_On_Time": {
-      "type": "SetAttribute",
-      "attribute": "adherence_probability",
-      "distributed_transition": [
-        {
-          "transition": "Adherence_Delay",
-          "distribution": {
-            "attribute": "adherence_probability",
-            "default": 0.9
-          }
-        },
-        {
-          "transition": "Smoker_Attribute",
-          "distribution": {
-            "attribute": "non_adherence_probability",
-            "default": 0.1
-          }
-        }
-      ],
-      "remarks": [
-        "Would have to use an expression to determine a probability based on time since quitting. Gets processed if the patient has gone through the Quit_Smoking_Care state and is not currently a smoker."
-      ],
-      "value": 0.9
-    },
-    "Possible_Quitter": {
-      "type": "Simple",
-      "distributed_transition": [
-        {
-          "transition": "Quit_Smoking_Attempt",
-          "distribution": {
-            "attribute": "quit_smoking_probability",
-            "default": 0.5
-          }
-        },
-        {
-          "transition": "Time_Smoking",
-          "distribution": {
-            "attribute": "not_quit_smoking_probability",
-            "default": 0.5
-          }
-        }
-      ]
-    },
-    "Smoking_Cessation_Therapy_All": {
-      "type": "CarePlanStart",
-      "codes": [
-        {
-          "system": "SNOMED-CT",
-          "code": 710081004,
-          "display": "Smoking cessation therapy"
-        }
-      ],
-      "activities": [
-        {
-          "system": "SNOMED-CT",
-          "code": 384742004,
-          "display": "Smoking cessation assistance"
-        },
-        {
-          "system": "SNOMED-CT",
-          "code": 713700008,
-          "display": "Smoking cessation drug therapy"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
-    "Smoking_Cessation_Therapy_Counseling": {
-      "type": "CarePlanStart",
-      "codes": [
-        {
-          "system": "SNOMED-CT",
-          "code": 710081004,
-          "display": "Smoking cessation therapy"
-        }
-      ],
-      "activities": [
-        {
-          "system": "SNOMED-CT",
-          "code": 384742004,
-          "display": "Smoking cessation assistance"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
-    },
-    "Smoking_Cessation_Therapy_Medication": {
-      "type": "CarePlanStart",
-      "codes": [
-        {
-          "system": "SNOMED-CT",
-          "code": 710081004,
-          "display": "Smoking cessation therapy"
-        }
-      ],
-      "activities": [
-        {
-          "system": "SNOMED-CT",
-          "code": 713700008,
-          "display": "Smoking cessation drug therapy"
-        }
-      ],
-      "direct_transition": "Possible_Adherence"
     }
   }
 }
