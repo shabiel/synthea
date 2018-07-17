@@ -1,0 +1,967 @@
+{
+  "name": "Smoking",
+  "remarks": [
+    "https://www.cdc.gov/tobacco/data_statistics/mmwrs/byyear/2018/mm6702a1/highlights.htm\n\nhttps://www.cdc.gov/tobacco/data_statistics/fact_sheets/adult_data/cig_smoking/index.htm\n\n***more stats here"
+  ],
+  "states": {
+    "Initial": {
+      "type": "Initial",
+      "direct_transition": "Smoker_Attribute_Default"
+    },
+    "Terminal": {
+      "type": "Terminal"
+    },
+    "Smoking_Age_Guard": {
+      "type": "Guard",
+      "allow": {
+        "condition_type": "Age",
+        "operator": ">=",
+        "quantity": 16,
+        "unit": "years",
+        "value": 0
+      },
+      "direct_transition": "Start_Smoking_Delay"
+    },
+    "Smoker_Attribute": {
+      "type": "SetAttribute",
+      "attribute": "smoker",
+      "direct_transition": "Quit_Smoking_Delay",
+      "value": true
+    },
+    "Start_Smoking": {
+      "type": "Simple",
+      "direct_transition": "Time_Smoking_Attribute_Set"
+    },
+    "Start_Smoking_Delay": {
+      "type": "Delay",
+      "exact": {
+        "quantity": 1,
+        "unit": "months"
+      },
+      "conditional_transition": [
+        {
+          "transition": "Before_1970_Probability",
+          "condition": {
+            "condition_type": "Date",
+            "operator": "<",
+            "year": 1970,
+            "value": 0
+          }
+        },
+        {
+          "transition": "1970-1980_Probability",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Date",
+                "operator": ">=",
+                "year": 1970,
+                "value": 0
+              },
+              {
+                "condition_type": "Date",
+                "operator": "<",
+                "year": 1980,
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "1980-1990_Probability",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Date",
+                "operator": ">=",
+                "year": 1980,
+                "value": 0
+              },
+              {
+                "condition_type": "Date",
+                "operator": "<",
+                "year": 1990,
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "1990-2000_Probability",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Date",
+                "operator": ">=",
+                "year": 1990,
+                "value": 0
+              },
+              {
+                "condition_type": "Date",
+                "operator": "<",
+                "year": 2000,
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "2000-2010_Probability",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Date",
+                "operator": ">=",
+                "year": 2000,
+                "value": 0
+              },
+              {
+                "condition_type": "Date",
+                "operator": "<",
+                "year": 2010,
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "After_2010_Probability",
+          "condition": {
+            "condition_type": "Date",
+            "operator": ">=",
+            "year": 2010,
+            "value": 0
+          }
+        }
+      ],
+      "remarks": [
+        "16.1% of MA are smokers in 2016.",
+        "http://www.cdc.gov/tobacco/data_statistics/state_data/state_highlights/2010/states/massachusetts/",
+        "but the rate is decreasing over time",
+        "http://www.cdc.gov/tobacco/data_statistics/tables/trends/cig_smoking/",
+        "selected #s:",
+        "1965 - 42.4%",
+        "1975 - 37.1%",
+        "1985 - 30.1%",
+        "1995 - 24.7%",
+        "2005 - 20.9%",
+        "2015 - 16.1%",
+        "assume that it was never significantly higher than 42% pre-1960s, but will continue to drop",
+        "slowly after 2016",
+        "it's decreasing about .5% per year"
+      ]
+    },
+    "Quit_Smoking_Delay": {
+      "type": "Delay",
+      "exact": {
+        "quantity": 1,
+        "unit": "months"
+      },
+      "conditional_transition": [
+        {
+          "transition": "Quit_Probability_16-24",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Age",
+                "operator": ">=",
+                "quantity": 16,
+                "unit": "years",
+                "value": 0
+              },
+              {
+                "condition_type": "Age",
+                "operator": "<",
+                "quantity": 25,
+                "unit": "years",
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "Quit_Probability_25-44",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Age",
+                "operator": ">=",
+                "quantity": 25,
+                "unit": "years",
+                "value": 0
+              },
+              {
+                "condition_type": "Age",
+                "operator": "<",
+                "quantity": 45,
+                "unit": "years",
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "Quit_Probability_45-64",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "Age",
+                "operator": ">=",
+                "quantity": 45,
+                "unit": "years",
+                "value": 0
+              },
+              {
+                "condition_type": "Age",
+                "operator": "<",
+                "quantity": 65,
+                "unit": "years",
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "transition": "Quit_Probability_Over_65",
+          "condition": {
+            "condition_type": "Age",
+            "operator": ">=",
+            "quantity": 65,
+            "unit": "years",
+            "value": 0
+          }
+        }
+      ],
+      "remarks": [
+        "https://www.cdc.gov/tobacco/data_statistics/fact_sheets/cessation/quitting/index.htm",
+        "Percentage of adult daily cigarette smokers who stopped smoking for more than 1 day in 2015 because they were trying to quit:",
+        "Nearly 7 out of 10 (66.7%) smokers aged 18–24 years",
+        "Nearly 6 out of 10 (59.8%) smokers aged 25–44 years",
+        "More than 4 out of 10 (49.6%) smokers aged 45–64 years",
+        "About 4 out of 10 (47.2%) smokers aged 65 years or older"
+      ]
+    },
+    "Time_Smoking": {
+      "type": "Counter",
+      "attribute": "time_smoking_in_months",
+      "action": "increment",
+      "direct_transition": "Quit_Smoking_Delay"
+    },
+    "Time_Smoking_Attribute_Set": {
+      "type": "SetAttribute",
+      "attribute": "time_smoking_in_months",
+      "direct_transition": "Smoker_Attribute",
+      "value": 1
+    },
+    "Before_1970_Probability": {
+      "type": "SetAttribute",
+      "attribute": "start_smoking_probability",
+      "value": 0.424,
+      "direct_transition": "Possible_Smoker"
+    },
+    "1970-1980_Probability": {
+      "type": "SetAttribute",
+      "attribute": "start_smoking_probability",
+      "value": 0.371,
+      "direct_transition": "Possible_Smoker"
+    },
+    "1980-1990_Probability": {
+      "type": "SetAttribute",
+      "attribute": "start_smoking_probability",
+      "value": 0.301,
+      "direct_transition": "Possible_Smoker"
+    },
+    "1990-2000_Probability": {
+      "type": "SetAttribute",
+      "attribute": "start_smoking_probability",
+      "value": 0.247,
+      "direct_transition": "Possible_Smoker"
+    },
+    "2000-2010_Probability": {
+      "type": "SetAttribute",
+      "attribute": "start_smoking_probability",
+      "value": 0.209,
+      "direct_transition": "Possible_Smoker"
+    },
+    "After_2010_Probability": {
+      "type": "SetAttribute",
+      "attribute": "start_smoking_probability",
+      "value": 0.161,
+      "direct_transition": "Possible_Smoker"
+    },
+    "Possible_Smoker": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "transition": "Start_Smoking",
+          "distribution": {
+            "attribute": "start_smoking_probability",
+            "default": 0
+          }
+        },
+        {
+          "transition": "Start_Smoking_Delay",
+          "distribution": {
+            "attribute": "don't_start_smoking_probability",
+            "default": 1
+          }
+        }
+      ],
+      "remarks": [
+        "16.1% of MA are smokers in 2016.",
+        "http://www.cdc.gov/tobacco/data_statistics/state_data/state_highlights/2010/states/massachusetts/",
+        "but the rate is decreasing over time",
+        "http://www.cdc.gov/tobacco/data_statistics/tables/trends/cig_smoking/",
+        "selected #s:",
+        "1965 - 42.4%",
+        "1975 - 37.1%",
+        "1985 - 30.1%",
+        "1995 - 24.7%",
+        "2005 - 20.9%",
+        "2015 - 16.1%",
+        "assume that it was never significantly higher than 42% pre 1960s, but will continue to drop slowly after 2016",
+        "it's decreasing about .5% per year"
+      ]
+    },
+    "Quit_Smoking_Attribute": {
+      "type": "SetAttribute",
+      "attribute": "smoker",
+      "value": false,
+      "conditional_transition": [
+        {
+          "transition": "Add_Time",
+          "condition": {
+            "condition_type": "Or",
+            "conditions": [
+              {
+                "condition_type": "Attribute",
+                "attribute": "quit_smoking_care",
+                "operator": "==",
+                "value": "medication"
+              },
+              {
+                "condition_type": "Attribute",
+                "attribute": "quit_smoking_care",
+                "operator": "==",
+                "value": "both"
+              }
+            ]
+          }
+        },
+        {
+          "transition": "Adherence_Delay"
+        }
+      ]
+    },
+    "Smoker_Attribute_Default": {
+      "type": "SetAttribute",
+      "attribute": "smoker",
+      "direct_transition": "Smoking_Age_Guard",
+      "value": false
+    },
+    "Quit_Probability_25-44": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_probability",
+      "value": 0.598,
+      "direct_transition": "Decrease_Quit_Probability"
+    },
+    "Quit_Probability_45-64": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_probability",
+      "value": 0.496,
+      "direct_transition": "Decrease_Quit_Probability"
+    },
+    "Quit_Probability_Over_65": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_probability",
+      "value": 0.472,
+      "direct_transition": "Decrease_Quit_Probability"
+    },
+    "Quit_Probability_16-24": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_probability",
+      "value": 0.667,
+      "direct_transition": "Decrease_Quit_Probability"
+    },
+    "Decrease_Quit_Probability": {
+      "type": "Simple",
+      "direct_transition": "Possible_Quitter",
+      "remarks": [
+        "This state will decrease the probability that a smoker quits based on the amount of time they have been smoking. Will have to use an expression."
+      ]
+    },
+    "Time_Since_Quitting_Set": {
+      "type": "SetAttribute",
+      "attribute": "time_since_quitting_in_months",
+      "direct_transition": "Adherence_Delay",
+      "value": 0
+    },
+    "Adherence_Delay": {
+      "type": "Delay",
+      "exact": {
+        "quantity": 1,
+        "unit": "months"
+      },
+      "conditional_transition": [
+        {
+          "transition": "Terminal",
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "time_since_quitting_in_weeks",
+            "operator": ">",
+            "value": 521
+          }
+        },
+        {
+          "transition": "Time_Since_Quitting_Increment",
+          "condition": {
+            "condition_type": "And",
+            "conditions": [
+              {
+                "condition_type": "PriorState",
+                "name": "Quit_Smoking_Care"
+              },
+              {
+                "condition_type": "And",
+                "conditions": [
+                  {
+                    "condition_type": "Attribute",
+                    "attribute": "smoker",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "condition_type": "Attribute",
+                    "attribute": "time_since_quitting_in_weeks",
+                    "operator": "<=",
+                    "value": 521
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "transition": "Quit_Smoking_Care"
+        }
+      ]
+    },
+    "Time_Since_Quitting_Increment": {
+      "type": "Counter",
+      "attribute": "time_since_quitting_in_months",
+      "action": "increment",
+      "direct_transition": "Adherence_Probability_Based_On_Time"
+    },
+    "Quit_Smoking_Care": {
+      "type": "Simple",
+      "remarks": [
+        "Among smokers who made quit attempts, 6.8% reported using counseling, 29.0% medication, and 4.7% both. Among smokers who used counseling, 4.1% used a telephone quitline, 2.8% used one-on-one counseling, and 2.4% used a stop smoking clinic, class, or support group. Among smokers who used medications, 16.6% used a nicotine patch, 12.5% used nicotine gum or lozenges, 7.9% used varenicline, 2.7% used bupropion, and 2.4% used nicotine spray or inhaler.",
+        "https://www.cdc.gov/mmwr/volumes/65/wr/mm6552a1.htm?s_cid=mm6552a1_w%20"
+      ],
+      "distributed_transition": [
+        {
+          "transition": "Medication",
+          "distribution": 0.29
+        },
+        {
+          "transition": "Counseling",
+          "distribution": 0.068
+        },
+        {
+          "transition": "Possible_Adherence",
+          "distribution": 0.595
+        },
+        {
+          "transition": "Counseling_and_Medication",
+          "distribution": 0.047
+        }
+      ]
+    },
+    "Telephone_Quitline": {
+      "type": "Simple",
+      "direct_transition": "Possible_Is_Both_State"
+    },
+    "One_On_One_Counseling": {
+      "type": "Simple",
+      "direct_transition": "Possible_Is_Both_State"
+    },
+    "Clinic/Class/Support_Group": {
+      "type": "Simple",
+      "direct_transition": "Possible_Is_Both_State"
+    },
+    "Nicotine_Patch": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 198029,
+          "display": "24 HR Nicotine 0.583 MG/HR Transdermal System"
+        }
+      ],
+      "direct_transition": "6-14_Week_Delay"
+    },
+    "Nicotine_Gum/Lozenges": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 154906,
+          "display": "Nicotine Chewing Gum"
+        }
+      ],
+      "direct_transition": "6-14_Week_Delay"
+    },
+    "Varenicline": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 591622,
+          "display": "Varenicline"
+        }
+      ],
+      "direct_transition": "Up_To_14_Week_Delay"
+    },
+    "Bupropion": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 42347,
+          "display": "Bupropion"
+        }
+      ],
+      "direct_transition": "Up_To_14_Week_Delay"
+    },
+    "Nicotine_Spray/Inhaler": {
+      "type": "MedicationOrder",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 1801233,
+          "display": "Nicotine Nasal Product"
+        }
+      ],
+      "direct_transition": "Up_To_6_Month_Delay"
+    },
+    "Other_Counseling": {
+      "type": "Simple",
+      "direct_transition": "Possible_Is_Both_State"
+    },
+    "Other_Medication": {
+      "type": "Simple",
+      "direct_transition": "Possible_Adherence",
+      "remarks": [
+        "To-do: figure out what to do here."
+      ]
+    },
+    "Counseling_and_Medication": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_care",
+      "direct_transition": "Counseling_Distribution",
+      "value": "both"
+    },
+    "Medication_Distribution": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "transition": "Nicotine_Patch",
+          "distribution": 0.166
+        },
+        {
+          "transition": "Nicotine_Gum/Lozenges",
+          "distribution": 0.125
+        },
+        {
+          "transition": "Varenicline",
+          "distribution": 0.079
+        },
+        {
+          "transition": "Bupropion",
+          "distribution": 0.027
+        },
+        {
+          "transition": "Nicotine_Spray/Inhaler",
+          "distribution": 0.024
+        },
+        {
+          "transition": "Other_Medication",
+          "distribution": 0.579
+        }
+      ],
+      "remarks": [
+        "For duration of each medication:",
+        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29581/?report=objectonly"
+      ]
+    },
+    "Counseling_Distribution": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "transition": "Telephone_Quitline",
+          "distribution": 0.041
+        },
+        {
+          "transition": "One_On_One_Counseling",
+          "distribution": 0.028
+        },
+        {
+          "transition": "Clinic/Class/Support_Group",
+          "distribution": 0.024
+        },
+        {
+          "transition": "Other_Counseling",
+          "distribution": 0.907
+        }
+      ],
+      "remarks": [
+        "To-do: determine what state type to use for these."
+      ]
+    },
+    "Counseling": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_care",
+      "direct_transition": "Counseling_Distribution",
+      "value": "counseling"
+    },
+    "Medication": {
+      "type": "SetAttribute",
+      "attribute": "quit_smoking_care",
+      "direct_transition": "Medication_Distribution",
+      "value": "medication"
+    },
+    "Possible_Adherence": {
+      "type": "Simple",
+      "complex_transition": [
+        {
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "quit_smoking_care",
+            "operator": "==",
+            "value": "nil"
+          },
+          "distributions": [
+            {
+              "transition": "Smoker_Attribute",
+              "distribution": 0.892
+            },
+            {
+              "transition": "Quit_Smoking_Attribute",
+              "distribution": 0.108
+            }
+          ]
+        },
+        {
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "quit_smoking_care",
+            "operator": "==",
+            "value": "medication"
+          },
+          "distributions": [
+            {
+              "transition": "Smoker_Attribute",
+              "distribution": 0.783
+            },
+            {
+              "transition": "Quit_Smoking_Attribute",
+              "distribution": 0.217
+            }
+          ]
+        },
+        {
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "quit_smoking_care",
+            "operator": "==",
+            "value": "counseling"
+          },
+          "distributions": [
+            {
+              "transition": "Smoker_Attribute",
+              "distribution": 0.854
+            },
+            {
+              "transition": "Quit_Smoking_Attribute",
+              "distribution": 0.146
+            }
+          ]
+        },
+        {
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "quit_smoking_care",
+            "operator": "==",
+            "value": "both"
+          },
+          "distributions": [
+            {
+              "transition": "Smoker_Attribute",
+              "distribution": 0.758
+            },
+            {
+              "transition": "Quit_Smoking_Attribute",
+              "distribution": 0.242
+            }
+          ]
+        }
+      ],
+      "remarks": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29548/?report=objectonly",
+        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29580/?report=objectonly",
+        "https://www.ncbi.nlm.nih.gov/books/NBK63943/table/A29578/?report=objectonly"
+      ]
+    },
+    "6-14_Week_Delay": {
+      "type": "Delay",
+      "range": {
+        "low": 6,
+        "high": 14,
+        "unit": "weeks"
+      },
+      "conditional_transition": [
+        {
+          "transition": "End_Nicotine_Gum/Lozenges",
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": 154906,
+                "display": "Nicotine Chewing Gum"
+              }
+            ]
+          }
+        },
+        {
+          "transition": "End_Nicotine_Patch",
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": 198029,
+                "display": "24 HR Nicotine 0.583 MG/HR Transdermal System"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "Up_To_6_Month_Delay": {
+      "type": "Delay",
+      "range": {
+        "low": 0,
+        "high": 6,
+        "unit": "months"
+      },
+      "direct_transition": "End_Nicotine_Spray/Inhaler"
+    },
+    "Up_To_14_Week_Delay": {
+      "type": "Delay",
+      "range": {
+        "low": 0,
+        "high": 14,
+        "unit": "weeks"
+      },
+      "conditional_transition": [
+        {
+          "transition": "End_Varenicline",
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": 591622,
+                "display": "Varenicline"
+              }
+            ]
+          }
+        },
+        {
+          "transition": "End_Bupropion",
+          "condition": {
+            "condition_type": "Active Medication",
+            "codes": [
+              {
+                "system": "RxNorm",
+                "code": 42347,
+                "display": "Bupropion"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "Possible_Is_Both_State": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "transition": "Medication_Distribution",
+          "condition": {
+            "condition_type": "Attribute",
+            "attribute": "quit_smoking_care",
+            "operator": "==",
+            "value": "both"
+          }
+        },
+        {
+          "transition": "Possible_Adherence"
+        }
+      ]
+    },
+    "End_Nicotine_Patch": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 198029,
+          "display": "24 HR Nicotine 0.583 MG/HR Transdermal System"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "End_Nicotine_Gum/Lozenges": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 154906,
+          "display": "Nicotine Chewing Gum"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "End_Nicotine_Spray/Inhaler": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 1801233,
+          "display": "Nicotine Nasal Product"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "End_Bupropion": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 42347,
+          "display": "Bupropion"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "End_Varenicline": {
+      "type": "MedicationEnd",
+      "codes": [
+        {
+          "system": "RxNorm",
+          "code": 591622,
+          "display": "Varenicline"
+        }
+      ],
+      "direct_transition": "Possible_Adherence"
+    },
+    "Quit_Smoking_Attempt": {
+      "type": "Simple",
+      "direct_transition": "Time_Since_Quitting_Set"
+    },
+    "Add_Up_To_6_Months_Since_Quit": {
+      "type": "Simple",
+      "direct_transition": "Adherence_Delay"
+    },
+    "Add_6-14_Weeks_Since_Quit": {
+      "type": "Simple",
+      "direct_transition": "Adherence_Delay"
+    },
+    "Add_Up_To_14_Weeks_Since_Quit": {
+      "type": "Simple",
+      "direct_transition": "Adherence_Delay"
+    },
+    "Add_Time": {
+      "type": "Simple",
+      "conditional_transition": [
+        {
+          "transition": "Add_6-14_Weeks_Since_Quit",
+          "condition": {
+            "condition_type": "PriorState",
+            "name": "6-14_Week_Delay",
+            "since": "Quit_Smoking_Care"
+          }
+        },
+        {
+          "transition": "Add_Up_To_14_Weeks_Since_Quit",
+          "condition": {
+            "condition_type": "PriorState",
+            "name": "Up_To_14_Week_Delay",
+            "since": "Quit_Smoking_Care"
+          }
+        },
+        {
+          "transition": "Add_Up_To_6_Months_Since_Quit",
+          "condition": {
+            "condition_type": "PriorState",
+            "name": "Up_To_6_Month_Delay",
+            "since": "Quit_Smoking_Care"
+          }
+        }
+      ],
+      "remarks": [
+        "The three states that follow this will have to be able to use the value chosen by the delay range previous."
+      ]
+    },
+    "Adherence_Probability_Based_On_Time": {
+      "type": "SetAttribute",
+      "attribute": "adherence_probability",
+      "distributed_transition": [
+        {
+          "transition": "Adherence_Delay",
+          "distribution": {
+            "attribute": "adherence_probability",
+            "default": 0.9
+          }
+        },
+        {
+          "transition": "Smoker_Attribute",
+          "distribution": {
+            "attribute": "non_adherence_probability",
+            "default": 0.1
+          }
+        }
+      ],
+      "remarks": [
+        "Would have to use an expression to determine a probability based on time since quitting. Gets processed if the patient has gone through the Quit_Smoking_Care state and is not currently a smoker."
+      ],
+      "value": 0.9
+    },
+    "Possible_Quitter": {
+      "type": "Simple",
+      "distributed_transition": [
+        {
+          "transition": "Quit_Smoking_Attempt",
+          "distribution": {
+            "attribute": "quit_smoking_probability",
+            "default": 0.5
+          }
+        },
+        {
+          "transition": "Time_Smoking",
+          "distribution": {
+            "attribute": "not_quit_smoking_probability",
+            "default": 0.5
+          }
+        }
+      ]
+    }
+  }
+}
